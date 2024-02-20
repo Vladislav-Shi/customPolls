@@ -6,10 +6,10 @@
       <h2>{{ pollName }}</h2>
       <div action="" id="FormPoll" class="form">
         <QuectionComponent
-        @ValidateError="validate[item.id] = false"
-        @validateSuccses="validate[item.id] = true"
+          @ValidateError="validate[item.id] = false"
+          @validateSuccses="validate[item.id] = true"
           :ref="`field_${item.id}`"
-          v-for="(item) in currentQuestions"
+          v-for="item in currentQuestions"
           :key="item"
           :question="item"
         />
@@ -71,16 +71,23 @@ export default {
       error: null,
       polls: {},
       sections: 0,
-      validate: {}
+      validate: {},
     };
   },
   computed: {
     currentQuestions() {
       return this.polls.sections[this.currentSection].questions;
     },
-    disbledButton(){
-        console.log('disbledButton', this.validate)
-        return Object.values(this.validate).includes(false)
+    disbledButton() {
+      let arrKey = this.currentQuestions.map((obj) => obj.id);
+
+      let validateFilter = Object.fromEntries(
+        Object.entries(this.validate).filter(([key]) => arrKey.includes(parseInt(key)))
+      );
+      return Object.values(validateFilter).includes(false);
+    },
+    disbledSubmit() {
+      return Object.values(this.validate).includes(false);
     },
   },
   components: {
@@ -90,20 +97,15 @@ export default {
   methods: {
     changeSectionUp() {
       this.currentSection += 1;
-      console.log("questionUp", this.currentQuestions);
     },
     changeSectionDown() {
       this.currentSection -= 1;
-      console.log("questionDown", this.currentQuestions);
-
     },
-    saveChangeField () {},
+    saveChangeField() {},
 
     async submitForm() {
-        let data = this.$store.state.ansvers
-        console.log('data', data)
-        await authAxios.post(`api/poll/${this.$route.params.id}`, data)
-        console.log('`base/${this.$route.params.id}/`', `api/poll/${this.$route.params.id}`)
+      let data = this.$store.state.ansvers;
+      await authAxios.post(`api/poll/${this.$route.params.id}`, data);
     },
 
     async getQuestions() {
@@ -120,21 +122,14 @@ export default {
       }
       this.polls = response.data;
       this.sections = this.polls.sections.length;
-      console.log("response", response.data);
-    },
-    async addOpenPolls() {
-      let response = await authAxios.get("api/polls/");
-      if (response.status == 403) {
-        this.$router.push("/signin");
-        return;
-      }
-      if (response.status == 200) {
-        this.polls = response.data;
-      }
+      this.questions = this.polls.sections.flatMap(section => section.questions);
+      
+      this.$store.commit("add_questions_list", this.questions);
     },
   },
   created() {
-    this.$store.commit('clear_question')
+    this.$store.commit("clear_question");
+    this.$store.commit("clear_questions_list");
     this.getQuestions().finally(() => (this.loading = false));
   },
 };

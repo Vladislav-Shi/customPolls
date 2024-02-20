@@ -18,7 +18,9 @@ export default createStore({
       on_try: '',
       sections: []
     },
+    questions: [],
     ansvers: {},
+    ansver_choise_text: {}
   },
   getters: {
     refresh: (state) => state.auth.refresh_token,
@@ -27,6 +29,15 @@ export default createStore({
   mutations: {
     add_question(state, payload){
       state.ansvers[payload.question] = payload.data
+    },
+    add_choice_question(state, payload){
+      state.ansver_choise_text[payload.question] = payload.data
+    },
+    add_questions_list(state, payload){
+      state.questions = payload
+    },
+    clear_questions_list(state){
+      state.ansver_choise_text = {}
     },
     clear_question(state){
       state.ansvers = {}

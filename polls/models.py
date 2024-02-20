@@ -116,8 +116,6 @@ class QuestionCondition(models.Model):
     NOT_EQUAL = '!='
 
     CONDITION_TYPES = [
-        (MORE_OR_EQ, '>='),
-        (LESS_OR_EQ, '<='),
         (EQUAL, '=='),
         (NOT_EQUAL, '!='),
 

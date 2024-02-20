@@ -1,11 +1,12 @@
 import re
+from datetime import datetime
 from typing import List
 
 from django.contrib.auth.models import User
-from django.http import HttpRequest
 
 from polls.models import Question, Poll, UserPoll, Answer
 from polls.serializers import DeepQuestionSerializer
+
 
 class AnswerFormSerializer:
     # TODO переписать на Serializer
@@ -18,13 +19,16 @@ class AnswerFormSerializer:
             raise ValueError('Пустой ответ')
         self.raw_form = request_data
         self.questions = questions
+        self.prepared_form = None
         serialize = DeepQuestionSerializer(questions, many=True)
         self.serialized_questions = {question['id']: question for question in serialize.data}
-        self.prepared_form = None
+        self.conditions = {question['id']: question['conditions'] for question in serialize.data if
+                           len(question['conditions']) > 0}
 
         self.prepare_raw_form()
         self.is_valid = self.validate()
         self.add_choice_in_form()
+        self.check_conditions()
 
     def prepare_raw_form(self):
         """Заменяет все field__n на n. при этом убирает с пустой формы "лишние" поля"""
@@ -77,6 +81,27 @@ class AnswerFormSerializer:
                             match = re.search(r'\d+', answer)
                             self.prepared_form[q_id][index] = choice_values[int(match.group())]
 
+    def _condition_operation(self, condition: dict) -> bool:
+        if condition['operation'] == '==':
+            return self.prepared_form[condition['question_to_condition']] == condition['value']
+        elif condition['operation'] == '!=':
+            return self.prepared_form[condition['question_to_condition']] != condition['value']
+
+    def _answer_text(self, value) -> str:
+        if value is None:
+            return ''
+        return str(value)
+
+    def check_conditions(self):
+        """Проверяет соответствие условию.
+        Если поле не проходит по условию, то ставит его в None, если было значение"""
+        print('\n\n', self.conditions, '\n\n')
+        for key, conditions in self.conditions.items():
+            for condition in conditions:
+                if not self._condition_operation(condition):
+                    self.prepared_form[condition['question']] = None
+                    break
+
     def save(self, user: User):
         write_option = self.questions[0].survey.poll.on_try
         poll_id = self.questions[0].survey.poll.id
@@ -86,12 +111,14 @@ class AnswerFormSerializer:
             raise ValueError('На каждого пользователя только по одной записи')
         if user_poll is not None and write_option == Poll.REWRITE:
             user_poll.answers.all().delete()
+            user_poll.updated_at = datetime.now()
+            user_poll.save()
         else:
             user_poll = UserPoll.objects.create(user_id=1, poll_id=poll_id)
         objects = [Answer(
             poll_user_id=user_poll.id,
             question_id=key,
-            answer=str(value),
+            answer=self._answer_text(value),
             old_text=self.serialized_questions[key]['text']
         ) for key, value in self.prepared_form.items()]
         Answer.objects.bulk_create(objects)
