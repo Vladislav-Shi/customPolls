@@ -82,9 +82,3 @@ class UserPollAdmin(NestedModelAdmin):
 
     def get_user(self, obj):
         return obj.user.username
-
-
-admin.site.register(Choice)
-admin.site.register(Section)
-admin.site.register(Question)
-admin.site.register(Answer)
