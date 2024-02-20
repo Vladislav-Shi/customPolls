@@ -21,13 +21,14 @@ class PollView(views.APIView):
         return Response(serializer.data)
 
     def post(self, request, poll_id: int):
-        queryset = list(get_poll_questions(poll_id))
-        serializer = AnswerFormSerializer(self.request.data, queryset)
-        if serializer.is_valid:
-            print('validated')
-            serializer.save(self.request.user)
-            return Response(status=201)
-        else:
+        try:
+            queryset = list(get_poll_questions(poll_id))
+            serializer = AnswerFormSerializer(self.request.data, queryset)
+            if serializer.is_valid:
+                print('validated')
+                serializer.save(self.request.user)
+                return Response(status=201)
+        finally:
             return Response(status=400)
 
 
@@ -36,7 +37,7 @@ class PollListView(views.APIView):
 
     def get(self, request):
         """Вывод доступных опросов"""
-        polls = Poll.objects.exclude(users__user=self.request.user)
+        polls = Poll.objects.exclude(users__user=self.request.user, on_try=Poll.ONE)
         serializer = ListPollSerializer(polls, many=True)
         return Response(serializer.data)
 
