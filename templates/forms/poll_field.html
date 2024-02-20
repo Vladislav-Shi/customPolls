@@ -1,0 +1,105 @@
+<!-- Виджет текстового поля -->
+{% if question.question_type == 'text' %}
+<div data-mdb-input-init class="form-outline mb-4">
+  <label class="form-label" for="form1Example2">{{question.text}}</label>
+  <input
+    type="text"
+    id="form1Example2"
+    name="field__{{question.id}}"
+    class="form-control"
+  />
+</div>
+
+{% elif question.question_type == 'single_choice' %}
+<!-- Виджет поля radio select -->
+<div data-mdb-input-init class="form-outline mb-4">
+  <label class="form-label" for="form1Example2">{{question.text}}</label>
+  <fieldset>
+    {% for choice in question.choices.all %}
+    <div class="form-check">
+      <input
+        class="form-check-input"
+        type="radio"
+        name="field__{{question.id}}"
+        id="flexRadioDefault1"
+        value="${{choice.id}}"
+        onclick="handleRadio(this)"
+      />
+      <label class="form-check-label" for="flexRadioDefault1">
+        {{choice.text}}
+      </label>
+    </div>
+    {% endfor %} {% if question.other_field %}
+    <div class="form-check">
+      <input
+        class="form-check-input mt-2"
+        type="radio"
+        name="field__{{question.id}}"
+        id="flexRadioDefault1__{{question.position}}"
+        onclick="handleRadio(this)"
+        value="other"
+      />
+      <label class="form-check-label" for="flexRadioDefault1">
+        <input
+          type="text"
+          name="field__{{question.id}}__other"
+          id="field__{{question.id}}__other"
+          class="form-control"
+          placeholder="Другое"
+          aria-label="Text input with checkbox"
+        />
+      </label>
+    </div>
+    {% endif %}
+  </fieldset>
+</div>
+
+{% elif question.question_type == 'multiple_choice' %}
+<!-- Виджет поля multy select -->
+<div data-mdb-input-init class="form-outline mb-4">
+  <label class="form-label" for="form1Example2">{{question.text}}</label>
+
+  <fieldset>
+    {% for choice in question.choices.all %}
+    <div class="form-check">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        name="field__{{question.id}}"
+        id="flexRadioDefault1"
+        value="${{choice.id}}"
+        onclick="handleCheckBox(this)"
+      />
+      <label class="form-check-label" for="flexRadioDefault1">
+        {{choice.text}}
+      </label>
+    </div>
+    {% endfor %} {% if question.other_field %}
+    <div class="form-check">
+      <input
+        class="form-check-input mt-2"
+        type="checkbox"
+        name="field__{{question.id}}__other"
+        id="flexRadioDefault1"
+      />
+      <label class="form-check-label" for="flexRadioDefault1">
+        <input
+          type="text"
+          name="field__{{question.survey.position}}__{{question.position}}__other"
+          class="form-control"
+          placeholder="Другое"
+          aria-label="Text input with checkbox"
+        />
+      </label>
+    </div>
+    {% endif %}
+  </fieldset>
+
+  <input
+    type="text"
+    hidden
+    name="field__{{question.id}}__all"
+    id="field__{{question.id}}__all"
+  />
+</div>
+{% endif %}

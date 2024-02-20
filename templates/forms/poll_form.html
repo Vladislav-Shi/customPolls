@@ -1,0 +1,9 @@
+{% load poll_forms %}
+<h2>{% if name %}{{name}}{%else%}Form{% endif %}</h2>
+
+{% for question in questions %} {% draw_poll_question question %} {% endfor %}
+<!-- Submit button -->
+<button id="form-submit" type="submit" class="btn btn-primary btn-block">
+  Подтвердить
+</button>
+

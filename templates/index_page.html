@@ -1,0 +1,53 @@
+{% load bootstrap5 %} {% load poll_forms %} {% bootstrap_css %}
+{%bootstrap_javascript %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Тестирование формы</title>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-3"></div>
+        <div class="col">
+          <form action="" id="FormPoll" method="post" class="form">
+            {% csrf_token %} {% draw_form form_data %}
+          </form>
+        </div>
+        <div class="col-3"></div>
+      </div>
+    </div>
+    <script>
+      const form_data = {};
+
+      function handleCheckBox(checkbox) {
+        const checkboxes = document.getElementsByName(checkbox.name);
+        const allCheckboxValue = document.getElementById(
+          `${checkbox.name}__all`
+        );
+        const newValue = []
+        for (var i = 0; i < checkboxes.length; i++) {
+          if (checkboxes[i].checked) newValue.push(checkboxes[i].value);
+        }
+        allCheckboxValue.value = newValue
+      }
+
+      function handleRadio(radio) {
+        const inputId = `${radio.name}__other`;
+        const otherInput = document.getElementById(inputId);
+
+        if (radio.value === "other") {
+          otherInput.required = true; // Добавляем обязательное поле, если выбрана опция "Другое"
+          otherInput.disabled = false; // Включаем кнопку
+        } else {
+          otherInput.required = false; // Убираем обязательность поля
+          if (!document.querySelector('input[name="options"]:checked')) {
+            otherInput.disabled = true; // Если ничего не выбрано, отключаем кнопку
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
