@@ -16,7 +16,8 @@ services:
       context: .
       dockerfile: docker/FrontendDockerfile
     container_name: docker-django-vue-frontend
-    volumes:
-      - ./frontend:/app
+    command: bash -c "npm run serve"
+#    volumes:
+#      - .:/app
     ports:
       - "8080:8080"
