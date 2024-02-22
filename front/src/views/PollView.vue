@@ -4,6 +4,7 @@
     <div class="col-3"></div>
     <div class="col" v-if="error == null">
       <h2>{{ pollName }}</h2>
+      <h3 class="text-secondary">{{ polls.sections[currentSection].name }}</h3>
       <div action="" id="FormPoll" class="form">
         <QuectionComponent
           @ValidateError="validate[item.id] = false"
@@ -122,6 +123,7 @@ export default {
       }
       this.polls = response.data;
       this.sections = this.polls.sections.length;
+      this.pollName = this.polls['name']
       this.questions = this.polls.sections.flatMap(section => section.questions);
       
       this.$store.commit("add_questions_list", this.questions);

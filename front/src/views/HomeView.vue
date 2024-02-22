@@ -32,11 +32,16 @@ export default {
   data() {
     return {
       polls: [],
+      error: null
     }
   },
   methods: {
     async addOpenPolls() {
       let response = await authAxios.get('api/polls/')
+      .catch(() => {
+          this.$data.error =
+            "Страница не найдена или вы не можете пройти данный опрос";
+        });
       if (response.status == 403) {
         this.$router.push("/signin")
         return
